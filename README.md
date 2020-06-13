@@ -22,8 +22,8 @@ It uses [SikuliX](http://sikulix.com/) to determine images on the screen and [Te
 * [Latest Visual C++ Redistributable](https://support.microsoft.com/de-de/help/2977003/the-latest-supported-visual-c-downloads)
 * [Nox Player](https://www.bignox.com/)
 * Right nox settings, see below
-* Nox in fullscreen (when your monitor is 1920x1080, click the square in the right corner ![noxSettings3](https://i.imgur.com/rGe5u5C.png)) if higher resolution, just make it completely visible on the monitor
-* A Monitor with a resolution 1920x1080 or higher (I guess)
+* Nox in fullscreen (click the square in the right corner ![noxSettings3](https://i.imgur.com/rGe5u5C.png)) 
+* A Monitor with a resolution 1920x1080
 * Nox Players windowtitle needs to contain "NoxPlayer" (can be different when using multiple nox instances)
 
 # Settings Nox
