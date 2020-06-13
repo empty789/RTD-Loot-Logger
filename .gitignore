@@ -1,5 +1,11 @@
+# Debug images
+img/debug/*
+
 # Compiled class file
 *.class
+
+#eclipse settings file
+*.prefs
 
 # Log file
 *.log
