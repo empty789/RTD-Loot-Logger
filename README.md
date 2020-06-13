@@ -23,7 +23,7 @@ It uses [SikuliX](http://sikulix.com/) to determine images on the screen and [Te
 * [Nox Player](https://www.bignox.com/)
 * Right nox settings, see below
 * Nox in fullscreen (click the square in the right corner ![noxSettings3](https://i.imgur.com/rGe5u5C.png)) 
-* A Monitor with a resolution *1920x1080* (this is a must for now, need to find a way to support multiple resolutions in the future)
+* A Monitor with a resolution **1920x1080** (this is a must for now, need to find a way to support multiple resolutions in the future)
 * Nox Players windowtitle needs to contain "NoxPlayer" (can be different when using multiple nox instances)
 
 # Settings Nox
