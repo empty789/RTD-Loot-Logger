@@ -36,7 +36,7 @@ I highly recommend locking the resolution, so you dont accidently change it.
 
 # How to use it
 
-1. Download the Archive from release section, unzip it and keep the folder structure (there needs to be a "img" and a "tessdata" Folder in the same folder as the .jar), start the .jar
+1. Download the package from [release section](https://github.com/empty789/RTD-Loot-Logger/releases), unzip it and keep the folder structure (there needs to be a "img" and a "tessdata" Folder in the same folder as the .jar), start the .jar
 2. Go to the Adventure you want to farm and start it
 3. Enter the stage you are farming in the textbox down left
 3. Press start
