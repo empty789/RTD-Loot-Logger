@@ -22,13 +22,12 @@ It uses [SikuliX](http://sikulix.com/) to determine images on the screen and [Te
 * [Latest Visual C++ Redistributable](https://support.microsoft.com/de-de/help/2977003/the-latest-supported-visual-c-downloads)
 * [Nox Player](https://www.bignox.com/)
 * Right nox settings, see below
-* Nox in fullscreen (click the square in the right corner ![noxSettings3](https://i.imgur.com/rGe5u5C.png)) 
-* A Monitor with a resolution **1920x1080** (this is a must for now, need to find a way to support multiple resolutions in the future)
+* Nox resolution set to 1280x720 or 1920x1080
 * Nox Players windowtitle needs to contain "NoxPlayer" (can be different when using multiple nox instances)
 
 # Settings Nox
 
-You need to set the resolution to tablet and 1920x1080, for the images to be found correctly. This has to be done, cause the letters of big numbers get very tiny and every pixel counts ;D
+Select 1280x720 or 1920x1080.
 ![NoxSettings2](https://i.imgur.com/jJUclJm.png)
 
 I highly recommend locking the resolution, so you dont accidently change it.
@@ -45,6 +44,7 @@ I highly recommend locking the resolution, so you dont accidently change it.
 
 You can start the logger everytime, while farming. It will wait for the next reward screen and after that start logging time and rewards.
 Time is measured from start to start, the image its looking for to determine that is the "ON Battery save" icon in the right.
+When the reward is on screen, it will take multiple screenshots for 4 seconds and check them all afterwards to increase accuracy of the values.
 
 Dont block the reward region (1. red square) and the on battery save icon (2. red square).
 This is how I setup Nox and the logger.
