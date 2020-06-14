@@ -31,14 +31,7 @@ import net.sourceforge.tess4j.TesseractException;
 public class Logger {
 
 	final boolean debugMode = true;
-	 Pattern goldPattern;
-	 Pattern expPattern;
-	 Pattern morPattern;
-	 Pattern gloryPattern;
-	 Pattern quartzPattern;
-	 Pattern refinedPattern;
-	 //Pattern rewardPattern;
-	 //Pattern onPattern;
+
 	Tesseract tesseract;
 	Model model;
 	int index = 0;
@@ -52,14 +45,7 @@ public class Logger {
 		this.model = model;
 		
 		
-		  goldPattern = new Pattern("gold.png").similar(.8f);
-		  expPattern = new Pattern("exp.png").similar(.8f);
-		  morPattern = new Pattern("mor.png").similar(.8f);
-		  gloryPattern = new Pattern("glory.png").similar(.8f);
-		  quartzPattern = new Pattern("quartz.png").similar(.8f);
-		  refinedPattern = new Pattern("refined.png").similar(.8f);
-		  //rewardPattern = new Pattern("rewards.png").similar(.8f);
-		  //onPattern = new Pattern("on.png").similar(.8f);
+
 	}
 
 	public Region findNox() {
