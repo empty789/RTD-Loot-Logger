@@ -12,7 +12,7 @@ import org.sikuli.script.Region;
 
 public class Model {
 	
-	public final String version = "0.1";
+	public final String version = "0.2";
 
 	Long gold = 0L, exp = 0L, time = 0L, startTime;
 	int mor = 0, glory = 0, runs = 0, quartz = 0, refined = 0;
