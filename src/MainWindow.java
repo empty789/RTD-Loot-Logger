@@ -36,21 +36,23 @@ import java.awt.Toolkit;
 
 import net.miginfocom.swing.MigLayout;
 import javax.swing.JTextField;
+import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JRadioButtonMenuItem;
 
 public class MainWindow {
 
-	private JFrame frmRtdLootLogger;
+	public JFrame frmRtdLootLogger;
 	private JTable table;
 	private DungeonRunTableModel tableModel;
 	private ArrayList<DungeonRun> runs;
 	private JLabel lblTimer;
 	public boolean timerRunning;
-	private boolean btnToggle = false;
+	public boolean btnToggle = false;
 	private long elapsedTime;
 	private long startTime;
 	private JPanel panel_5;
@@ -88,6 +90,10 @@ public class MainWindow {
 	private JMenu mnExport;
 	private JMenuItem mntmAscsv;
 	private JMenu mnVersion;
+	public JButton btnStart;
+	private JMenu mnResolution;
+	public JRadioButtonMenuItem rdbtnmntmx;
+	public JRadioButtonMenuItem rdbtnmntmx_1;
 
 	/**
 	 * Create the application.
@@ -260,7 +266,7 @@ public class MainWindow {
 		panel_5 = new JPanel();
 		frmRtdLootLogger.getContentPane().add(panel_5, BorderLayout.SOUTH);
 
-		JButton btnStart = new JButton("Start");
+		btnStart = new JButton("Start");
 		btnStart.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				btnToggle = !btnToggle;
@@ -352,6 +358,19 @@ public class MainWindow {
 		});
 		mnExport.add(mntmAscsv);
 		
+		mnResolution = new JMenu("Resolution");
+		menuBar.add(mnResolution);
+		
+		rdbtnmntmx = new JRadioButtonMenuItem("1280x720");
+		rdbtnmntmx.setSelected(true);
+		mnResolution.add(rdbtnmntmx);
+		
+		rdbtnmntmx_1 = new JRadioButtonMenuItem("1920x1080");
+		mnResolution.add(rdbtnmntmx_1);
+		
+		ButtonGroup group = new ButtonGroup();
+		group.add(rdbtnmntmx);
+		group.add(rdbtnmntmx_1);
 		mnVersion = new JMenu("v"+model.version);
 		mnVersion.setEnabled(false);
 		menuBar.add(mnVersion);

@@ -18,7 +18,7 @@ public class Main {
 		
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		MainWindow main = new MainWindow();
-
+		//Settings s = new Settings();
 
 	}
 }

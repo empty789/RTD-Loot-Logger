@@ -12,6 +12,7 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
+import javax.swing.JOptionPane;
 
 import org.sikuli.basics.Settings;
 import org.sikuli.script.FindFailed;
@@ -36,8 +37,8 @@ public class Logger {
 	 Pattern gloryPattern;
 	 Pattern quartzPattern;
 	 Pattern refinedPattern;
-	 Pattern rewardPattern;
-	 Pattern onPattern;
+	 //Pattern rewardPattern;
+	 //Pattern onPattern;
 	Tesseract tesseract;
 	Model model;
 	int index = 0;
@@ -47,7 +48,7 @@ public class Logger {
 	public Logger(Model model) {
 		tesseract = new Tesseract();
 		tesseract.setDatapath("tessdata/");
-		tesseract.setTessVariable("user_defined_dpi", "300");
+		tesseract.setTessVariable("user_defined_dpi", "320");
 		this.model = model;
 		
 		
@@ -57,23 +58,29 @@ public class Logger {
 		  gloryPattern = new Pattern("glory.png").similar(.8f);
 		  quartzPattern = new Pattern("quartz.png").similar(.8f);
 		  refinedPattern = new Pattern("refined.png").similar(.8f);
-		  rewardPattern = new Pattern("rewards.png").similar(.8f);
-		  onPattern = new Pattern("on.png").similar(.8f);
+		  //rewardPattern = new Pattern("rewards.png").similar(.8f);
+		  //onPattern = new Pattern("on.png").similar(.8f);
 	}
 
 	public Region findNox() {
 		Settings.MoveMouseDelay = 0;
-		final Rectangle rect = new Rectangle(0, 0, 0, 0); // needs to be final or effectively final for lambda
+		final Rectangle rect = new Rectangle(-9999, 0, 0, 0); // needs to be final or effectively final for lambda
 		WindowUtils.getAllWindows(true).forEach(desktopWindow -> {
 			if (desktopWindow.getTitle().contains("NoxPlayer")) {
 				rect.setRect(desktopWindow.getLocAndSize());
 			}
+			
 		});
 
 		Region r = new Region(rect);
+		//System.out.println("Nox size: "+r.w+"x"+r.h);
+		// 720 1284x754
+		// 1080 1924x1114
 
 		return r;
 	}
+	
+	
 
 	public Region createRegion(int x, int y, int w, int h) {
 		Region r = findNox();
@@ -92,9 +99,40 @@ public class Logger {
 	public void startRun(MainWindow w) {
 		thread = new Thread("RunThread") {
 			public void run() {
+				int resolution = 720;
+				if(w.rdbtnmntmx.isSelected())
+					resolution = 720;
+				else if(w.rdbtnmntmx_1.isSelected())
+					resolution = 1080;
+				
+				Region noxReg = findNox();
+				if(noxReg.getX() == -9999) {
+					JOptionPane.showMessageDialog(w.frmRtdLootLogger, "There is no Nox visible on screen.", "Nox where are you...",
+							JOptionPane.ERROR_MESSAGE);
+					w.btnToggle = !w.btnToggle;
+					w.btnStart.setText("Start");
+					this.stop();
+				}else if(resolution == 720 &&(noxReg.getW() != 1284 || noxReg.getH() != 754)) {
+					JOptionPane.showMessageDialog(w.frmRtdLootLogger, "You have selected 1280x720, but nox seems to be a different resolution (or minimized). \nPlease set the resolution to 1280x720, restart nox and try again.", "Ups",
+							JOptionPane.ERROR_MESSAGE);
+					w.btnToggle = !w.btnToggle;
+					w.btnStart.setText("Start");
+					this.stop();
+				}else if(resolution == 1080 &&(noxReg.getW() != 1924 || noxReg.getH() != 1114)) {
+					JOptionPane.showMessageDialog(w.frmRtdLootLogger, "You have selected 1920x1080, but nox seems to be a different resolution (or minimized). \nPlease set the resolution to 1920x1080, restart nox and try again.", "Ups",
+							JOptionPane.ERROR_MESSAGE);
+					w.btnToggle = !w.btnToggle;
+					w.btnStart.setText("Start");
+					this.stop();
+				}
+				model.setResolution(resolution);
+				if(resolution == 1080)
+					model.rewardReg = createRegion(model.noxReward1080.x, model.noxReward1080.y, model.noxReward1080.width, model.noxReward1080.height);
+				else
+					model.rewardReg = createRegion((int)(model.noxReward1080.x*0.67), (int)(model.noxReward1080.y*0.67), (int)(model.noxReward1080.width*0.67), (int)(model.noxReward1080.height*0.67));
 
 				w.setStatus("Waiting for rewards...");
-				while (findNox().exists(rewardPattern) == null) {
+				while (findNox().exists(model.rewardPattern) == null) {
 					try {
 						Thread.sleep(20);
 					} catch (InterruptedException e) {
@@ -103,7 +141,7 @@ public class Logger {
 					}
 				}
 				w.setStatus("Waiting for new run...");
-				while (findNox().exists(onPattern) == null) {
+				while (findNox().exists(model.onPattern) == null) {
 					try {
 						Thread.sleep(20);
 					} catch (InterruptedException e) {
@@ -118,8 +156,9 @@ public class Logger {
 					index++;
 					// start
 
+					model.resetRewardImages();
 					w.setStatus("Waiting for rewards...");
-					while (findNox().exists(rewardPattern) == null) {
+					while (findNox().exists(model.rewardPattern) == null) {
 						try {
 							Thread.sleep(20);
 						} catch (InterruptedException e) {
@@ -128,7 +167,7 @@ public class Logger {
 						}
 					}
 					try {
-						Thread.sleep(50);
+						Thread.sleep(500);
 					} catch (InterruptedException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
@@ -138,12 +177,13 @@ public class Logger {
 
 					// take lootimages
 					model.runs++;
-					model.resetRewardImages();
+					
 					long startImageTime = System.currentTimeMillis();
 					long avgTime = 0;
 					long diff = 0;
 					while (diff < 4000 - avgTime) {
-						getLootImages();
+						//getLootImages();
+						getLootImages(resolution, model.patterns, model.rewardReg, model.offsets, false);
 						try {
 							Thread.sleep(20);
 						} catch (InterruptedException e) {
@@ -158,7 +198,7 @@ public class Logger {
 					}
 
 					w.setStatus("Waiting for new run to start...");
-					while (findNox().exists(onPattern) == null) {
+					while (findNox().exists(model.onPattern) == null) {
 						try {
 							Thread.sleep(20);
 						} catch (InterruptedException e) {
@@ -201,7 +241,7 @@ public class Logger {
 							gValue = mentry.getKey();
 						}
 					}
-					if (model.expSaved == 0) {
+
 						// exp ocr
 						tmpLong = 0;
 						for (int i = 0; i < model.expImages.size(); i++) {
@@ -223,9 +263,7 @@ public class Logger {
 								expValue = mentry.getKey();
 							}
 						}
-					} else {
-						expValue = model.expSaved;
-					}
+
 					// mor ocr
 					tmpLong = 0;
 					for (int i = 0; i < model.morImages.size(); i++) {
@@ -248,7 +286,7 @@ public class Logger {
 						}
 					}
 
-					if (model.glorySaved == 0) {
+
 						// glory ocr
 						tmpLong = 0;
 						for (int i = 0; i < model.gloryImages.size(); i++) {
@@ -270,9 +308,7 @@ public class Logger {
 								gloryValue = mentry.getKey();
 							}
 						}
-					} else {
-						gloryValue = model.glorySaved;
-					}
+
 
 					// quartz ocr
 					tmpLong = 0;
@@ -328,8 +364,7 @@ public class Logger {
 					model.glory += gloryValue;
 					model.quartz += quartzValue;
 					model.refined += refinedValue;
-					model.glorySaved = (int) gloryValue;
-					model.expSaved = expValue;
+
 
 					w.addRun(d);
 					w.setStatus("Added new run");
@@ -370,66 +405,38 @@ public class Logger {
 		}
 	}
 
-	public void getLootImages() {
 
-		Region reg = createRegion(0, 300, 1300, 500);
-		Match regMatch = null;
-		File origImage = null;
-		Region findReg;
-		BufferedImage img = null;
 
-		// gold
-		try {
-			regMatch = reg.wait(goldPattern, .01);
+	public void getLootImages(int res, ArrayList<Pattern> patterns, Region reg, ArrayList<Rectangle> rects, boolean debug) {
+		for (int i = 0; i < patterns.size(); i++) {
+			
 
-			if (regMatch != null) {
-				findReg = new Region(regMatch.getX() - 20, regMatch.getY() + 60, 142, 35);
-				origImage = new File(findReg.saveScreenCapture());
-			}
-		} catch (FindFailed e) {
-			// TODO Auto-generated catch block
+			
+			Match regMatch = null;
+			File origImage = null;
+			BufferedImage img = null;
+			Region findReg = null;
 
-		}
-		if (regMatch != null) {
 			try {
-				img = ImageIO.read(origImage);
-			} catch (IOException e) {
-				img = null;
-			}
+				regMatch = reg.wait(patterns.get(i), .01);
+				if(debug)
+					regMatch.highlight();
+				
+				if (regMatch != null) {
+					
+					findReg = new Region(regMatch.getX() + rects.get(i).x, regMatch.getY() + rects.get(i).y,
+						rects.get(i).width, rects.get(i).height);
 
-			for (int y = 0; y < img.getHeight(); y++) {
-
-				for (int x = 0; x < img.getWidth(); x++) {
-
-					Color pixel = new Color(img.getRGB(x, y));
-
-					if (pixel.getRed() > pixel.getBlue() && pixel.getBlue() > 90 && pixel.getGreen() < 222
-							&& pixel.getRed() >= 245) {
-						img.setRGB(x, y, Color.BLACK.getRGB());
-					} else {
-						img.setRGB(x, y, Color.WHITE.getRGB());
-					}
-
+					
+					if(debug)
+						findReg.highlight();
+				
+					origImage = new File(findReg.saveScreenCapture());
 				}
-
-			}
-			model.goldImages.add(img);
-		}
-
-		// exp
-		if (model.expSaved == 0) {
-			regMatch = null;
-			origImage = null;
-			findReg = null;
-			img = null;
-			try {
-				regMatch = reg.wait(expPattern, .01);
-
-				findReg = new Region(regMatch.getX() - 24, regMatch.getY() + 65, 142, 32);
-				origImage = new File(findReg.saveScreenCapture());
 			} catch (FindFailed e) {
-				// TODO Auto-generated catch block
+				System.out.println("Pattern " + i + " not found");
 
+				regMatch = null;
 			}
 			if (regMatch != null) {
 				try {
@@ -437,189 +444,85 @@ public class Logger {
 				} catch (IOException e) {
 					img = null;
 				}
+				if (i == 0) {
+					for (int y = 0; y < img.getHeight(); y++) {
 
-				for (int y = 0; y < img.getHeight(); y++) {
+						for (int x = 0; x < img.getWidth(); x++) {
 
-					for (int x = 0; x < img.getWidth(); x++) {
+							Color pixel = new Color(img.getRGB(x, y));
 
-						Color pixel = new Color(img.getRGB(x, y));
+							if (pixel.getRed() > pixel.getBlue() && pixel.getBlue() > 90 && pixel.getGreen() < 222
+									&& pixel.getRed() >= 245) {
+								img.setRGB(x, y, Color.BLACK.getRGB());
+							} else {
+								img.setRGB(x, y, Color.WHITE.getRGB());
+							}
 
-						if (pixel.getRed() > pixel.getBlue() && pixel.getBlue() > 70 && pixel.getGreen() < 220
-								&& pixel.getRed() >= 215) {
-							img.setRGB(x, y, Color.BLACK.getRGB());
-						} else {
-							img.setRGB(x, y, Color.WHITE.getRGB());
 						}
+
 					}
 
-				}
-				model.expImages.add(img);
-			}
-		}
-		regMatch = null;
-		origImage = null;
-		findReg = null;
-		img = null;
 
-		// mor
-		try {
-			regMatch = reg.wait(morPattern, .01);
+				}else if(i==1) {
+					for (int y = 0; y < img.getHeight(); y++) {
 
-			findReg = new Region(regMatch.getX() + 10, regMatch.getY() + 55, 40, 35);
-			origImage = new File(findReg.saveScreenCapture());
-		} catch (FindFailed e) {
-			// TODO Auto-generated catch block
+						for (int x = 0; x < img.getWidth(); x++) {
 
-		}
-		if (regMatch != null) {
-			try {
-				img = ImageIO.read(origImage);
-			} catch (IOException e) {
-				img = null;
-			}
-			for (int y = 0; y < img.getHeight(); y++) {
+							Color pixel = new Color(img.getRGB(x, y));
 
-				for (int x = 0; x < img.getWidth(); x++) {
-
-					Color pixel = new Color(img.getRGB(x, y));
-
-					if (pixel.getRed() > pixel.getBlue() && pixel.getBlue() > 90 && pixel.getGreen() < 225
-							&& pixel.getRed() >= 250) {
-						img.setRGB(x, y, Color.BLACK.getRGB());
-					} else {
-						img.setRGB(x, y, Color.WHITE.getRGB());
-					}
-				}
-
-			}
-			model.morImages.add(img);
-		}
-		if (model.glorySaved == 0) {
-			regMatch = null;
-			origImage = null;
-			findReg = null;
-			img = null;
-
-			// glory
-			try {
-				regMatch = reg.wait(gloryPattern, .01);
-
-				findReg = new Region(regMatch.getX() + 15, regMatch.getY() + 50, 50, 30);
-				origImage = new File(findReg.saveScreenCapture());
-			} catch (FindFailed e) {
-				// TODO Auto-generated catch block
-
-			}
-			if (regMatch != null) {
-				try {
-					img = ImageIO.read(origImage);
-				} catch (IOException e) {
-					img = null;
-				}
-				for (int y = 0; y < img.getHeight(); y++) {
-
-					for (int x = 0; x < img.getWidth(); x++) {
-
-						Color pixel = new Color(img.getRGB(x, y));
-
-						if (pixel.getRed() > pixel.getBlue() && pixel.getBlue() > 90 && pixel.getGreen() < 225
-								&& pixel.getRed() >= 250) {
-							img.setRGB(x, y, Color.BLACK.getRGB());
-						} else {
-							img.setRGB(x, y, Color.WHITE.getRGB());
+							if (pixel.getRed() > pixel.getBlue() && pixel.getBlue() > 70 && pixel.getGreen() < 220
+									&& pixel.getRed() >= 215) {
+								img.setRGB(x, y, Color.BLACK.getRGB());
+							} else {
+								img.setRGB(x, y, Color.WHITE.getRGB());
+							}
 						}
+
 					}
+				}else if(i>=2) {
+					for (int y = 0; y < img.getHeight(); y++) {
 
-				}
-				model.gloryImages.add(img);
-			}
-		}
+						for (int x = 0; x < img.getWidth(); x++) {
 
-		regMatch = null;
-		origImage = null;
-		findReg = null;
-		img = null;
+							Color pixel = new Color(img.getRGB(x, y));
 
-		// quartz
-		try {
-			regMatch = reg.wait(quartzPattern, .01);
+							if (pixel.getRed() > pixel.getBlue() && pixel.getBlue() > 90 && pixel.getGreen() < 225
+									&& pixel.getRed() >= 250) {
+								img.setRGB(x, y, Color.BLACK.getRGB());
+							} else {
+								img.setRGB(x, y, Color.WHITE.getRGB());
+							}
+						}
 
-			findReg = new Region(regMatch.getX() + 15, regMatch.getY() + 45, 50, 35);
-			origImage = new File(findReg.saveScreenCapture());
-		} catch (FindFailed e) {
-			// TODO Auto-generated catch block
-
-		}
-		if (regMatch != null) {
-			try {
-				img = ImageIO.read(origImage);
-			} catch (IOException e) {
-				img = null;
-			}
-			for (int y = 0; y < img.getHeight(); y++) {
-
-				for (int x = 0; x < img.getWidth(); x++) {
-
-					Color pixel = new Color(img.getRGB(x, y));
-
-					if (pixel.getRed() > pixel.getBlue() && pixel.getBlue() > 90 && pixel.getGreen() < 225
-							&& pixel.getRed() >= 250) {
-						img.setRGB(x, y, Color.BLACK.getRGB());
-					} else {
-						img.setRGB(x, y, Color.WHITE.getRGB());
 					}
 				}
 
-			}
-			model.quartzImages.add(img);
-		}
 
-		regMatch = null;
-		origImage = null;
-		findReg = null;
-		img = null;
-
-		// refined
-		try {
-			regMatch = reg.wait(refinedPattern, .01);
-
-			findReg = new Region(regMatch.getX() - 5, regMatch.getY() + 55, 70, 35);
-			origImage = new File(findReg.saveScreenCapture());
-		} catch (FindFailed e) {
-			// TODO Auto-generated catch block
-
-		}
-		if (regMatch != null) {
-			try {
-				img = ImageIO.read(origImage);
-			} catch (IOException e) {
-				img = null;
-			}
-			for (int y = 0; y < img.getHeight(); y++) {
-
-				for (int x = 0; x < img.getWidth(); x++) {
-
-					Color pixel = new Color(img.getRGB(x, y));
-
-					if (pixel.getRed() > pixel.getBlue() && pixel.getBlue() > 90 && pixel.getGreen() < 225
-							&& pixel.getRed() >= 250) {
-						img.setRGB(x, y, Color.BLACK.getRGB());
-					} else {
-						img.setRGB(x, y, Color.WHITE.getRGB());
-					}
+				
+				if(i==0) {
+					model.goldImages.add(img);
+				}else if(i==1) {
+					model.expImages.add(img);
+				}else if(i==2) {
+					model.morImages.add(img);
+				}else if(i==3) {
+					model.gloryImages.add(img);
+				}else if(i==4) {
+					model.quartzImages.add(img);
+				}else if(i==5) {
+					model.refinedImages.add(img);
 				}
-
+					
+				if(debug)
+					regMatch.highlight();
+				
+				if(debug)
+					findReg.highlight();
+				
 			}
-			model.refinedImages.add(img);
 		}
-
-		regMatch = null;
-		origImage = null;
-		findReg = null;
-		img = null;
-
+		
 	}
-
 
 
 }
